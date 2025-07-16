@@ -5,6 +5,9 @@ import (
 	"crawler-backend/middleware"
 	"crawler-backend/models"
 	"github.com/gin-gonic/gin"
+	
+    "github.com/gin-contrib/cors"
+    "time"
 )
 
 func main() {
@@ -15,7 +18,14 @@ func main() {
 	r := gin.Default()
 
 	// Apply CORS middleware
-	r.Use(middleware.CORSMiddleware())
+	r.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"http://localhost:5173","http://127.0.0.1:5173"}, // your frontend origin
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+        AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        MaxAge: 12 * time.Hour,
+    }))
 
 	// Public routes
 	api := r.Group("/api")
@@ -33,5 +43,5 @@ func main() {
 	}
 
 	// Start server
-	r.Run(":8080") // Or any port you prefer
+	r.Run(":8082") // Or any port you prefer
 }

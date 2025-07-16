@@ -1,57 +1,91 @@
 package controllers
 
 import (
-    "crawler-backend/crawler"
-    "crawler-backend/models"
-    "net/http"
+	"fmt"
+	"net/http"
+	"time"
 
-    "github.com/gin-gonic/gin"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
+	"crawler-backend/models"
 )
 
-type CrawlRequest struct {
-    URL    string `json:"url" binding:"required"`
-    UserID uint   `json:"user_id"`
-}
-
+// CrawlURL handles crawling logic
 func CrawlURL(db *gorm.DB) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        var req CrawlRequest
+	return func(c *gin.Context) {
+		var input struct {
+			URL string `json:"url"`
+		}
 
-        if err := c.ShouldBindJSON(&req); err != nil {
-            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-            return
-        }
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+			return
+		}
 
-        // Perform crawl
-        result, err := crawler.CrawlPage(req.URL)
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-            return
-        }
+		//  Extract userID from context (middleware should set it)
+		userIDVal, exists := c.Get("userID")
+		if !exists {
+			fmt.Println("userID not found in context")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
 
-        // Assign the user ID
-        result.UserID = req.UserID
+		userID, ok := userIDVal.(uint)
+		if !ok || userID == 0 {
+			fmt.Println("Invalid userID type or value:", userIDVal)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID"})
+			return
+		}
 
-        // Save result to DB
-        if err := db.Create(&result).Error; err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save crawl result"})
-            return
-        }
+		// Build result with status "queued"
+		result := models.CrawlResult{
+			URL:               input.URL,
+			Title:             "", // Placeholder
+			HTMLVersion:       "Unknown",
+			InternalLinks:     0,
+			ExternalLinks:     0,
+			InaccessibleLinks: 0,
+			HasLoginForm:      false,
+			Status:            "queued",
+			UserID:            userID,
+			CreatedAt:         time.Now(),
+			UpdatedAt:         time.Now(),
+		}
 
-        c.JSON(http.StatusOK, gin.H{"message": "Crawl successful", "data": result})
-    }
+		fmt.Printf("Saving crawl result for userID %d: %s\n", userID, input.URL)
+
+		if err := db.Create(&result).Error; err != nil {
+			fmt.Println("DB error:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save crawl result"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Crawl request submitted"})
+	}
 }
 
+// GetResults returns all crawl results for the authenticated user
 func GetResults(db *gorm.DB) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        var results []models.CrawlResult
+	return func(c *gin.Context) {
+		userIDVal, exists := c.Get("userID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
 
-        if err := db.Order("created_at desc").Find(&results).Error; err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch crawl results"})
-            return
-        }
+		userID, ok := userIDVal.(uint)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID"})
+			return
+		}
 
-        c.JSON(http.StatusOK, gin.H{"data": results})
-    }
+		var results []models.CrawlResult
+		if err := db.Where("user_id = ?", userID).Find(&results).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch results"})
+			return
+		}
+
+		c.JSON(http.StatusOK, results)
+	}
 }

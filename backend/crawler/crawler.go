@@ -29,6 +29,9 @@ func CrawlPage(url string) (*models.CrawlResult, error) {
 	h1Count := doc.Find("h1").Length()
 	h2Count := doc.Find("h2").Length()
 	h3Count := doc.Find("h3").Length()
+	h4Count := doc.Find("h4").Length()
+	h5Count := doc.Find("h5").Length()
+	h6Count := doc.Find("h6").Length()
 
 	internalLinks, externalLinks, inaccessible := countLinks(doc, url)
 	hasLogin := hasLoginForm(doc)
@@ -40,6 +43,9 @@ func CrawlPage(url string) (*models.CrawlResult, error) {
 		H1Count:           h1Count,
 		H2Count:           h2Count,
 		H3Count:           h3Count,
+		H4Count:           h4Count,
+		H5Count:           h5Count,
+		H6Count:           h6Count,
 		InternalLinks:     internalLinks,
 		ExternalLinks:     externalLinks,
 		InaccessibleLinks: inaccessible,

@@ -1,69 +1,73 @@
-# React + TypeScript + Vite
+# Web Crawler Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A web crawling and analysis application with user authentication, URL management, and crawl results dashboard.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- User registration and login
+- Add URLs for crawling and analysis
+- Asynchronous crawling with progress status
+- View crawl results in a sortable, paginated table
+- Detailed views with link statistics and broken links
+- Bulk actions to re-run or delete crawls
+- CORS support for frontend-backend communication
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **Backend:** Go (Gin framework), GORM, MySQL/PostgreSQL
+- **Frontend:** React, TypeScript, TanStack React Table, Axios
+- **API:** REST endpoints with JWT-based authentication
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Prerequisites
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- Go 1.20+
+- Node.js 18+
+- MySQL or PostgreSQL database
+- `npm` or `yarn`
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## Setup & Run Backend
+
+1. Clone repository and navigate to backend:
+
+   ```bash
+   cd backend
+
+Create .env file with database credentials and JWT secret, for example:
+
+Install Go dependencies:
+
+go mod download
+Run database migrations (if applicable):
+
+
+go run cmd/migrate/main.go
+Start backend server:
+
+go run main.go
+Backend will listen on http://localhost:8081
+
+Setup & Run Frontend
+Navigate to frontend directory:
+
+cd frontend
+Install dependencies:
+
+npm install
+# or
+yarn
+Start development server:
+
+
+npm run dev
+# or
+yarn dev
+Frontend will run on http://localhost:5173
+
